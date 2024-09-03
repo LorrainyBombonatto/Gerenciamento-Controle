@@ -1,0 +1,471 @@
+import tkinter as tk
+from tkinter import messagebox, font
+import sqlite3
+
+from reportlab.graphics.renderPM import save
+
+# Conexão com o banco de dados
+conn = sqlite3.connect('empresa.db')
+cursor = conn.cursor()
+
+# Criação das tabelas
+cursor.execute('''CREATE TABLE IF NOT EXISTS materiais (
+                    id INTEGER PRIMARY KEY,
+                    nome TEXT,
+                    valor REAL,
+                    quantidade INTEGER,
+                    loja TEXT)''')
+
+cursor.execute('''CREATE TABLE IF NOT EXISTS produtos (
+                    id INTEGER PRIMARY KEY,
+                    nome TEXT,
+                    valor_custo REAL,
+                    percentual_lucro REAL,
+                    valor_final REAL,
+                    quantidade INTEGER)''')
+
+cursor.execute('''CREATE TABLE IF NOT EXISTS clientes (
+                    id INTEGER PRIMARY KEY,
+                    nome TEXT,
+                    cidade TEXT,
+                    telefone TEXT,
+                    email TEXT)''')
+
+cursor.execute('''CREATE TABLE IF NOT EXISTS lojas (
+                    id INTEGER PRIMARY KEY,
+                    nome TEXT,
+                    telefone TEXT,
+                    departamento TEXT,
+                    endereco TEXT)''')
+
+cursor.execute('''CREATE TABLE IF NOT EXISTS notas_fiscais (
+                    id INTEGER PRIMARY KEY,
+                    numero TEXT,
+                    data TEXT,
+                    produto TEXT,
+                    loja TEXT,
+                    valor_unitario REAL)''')
+
+conn.commit()
+
+
+# Função para login
+def login():
+    if entry_user.get() == "admin" and entry_pass.get() == "senha":
+        main_screen()
+    else:
+        messagebox.showerror("Erro", "Usuário ou senha incorretos")
+
+
+# Tela de login
+def login_screen(button_font="Login"):
+    global entry_user, entry_pass
+    login_win = tk.Tk()
+    login_win.title("Login")
+
+    tk.Label(login_win, text="Usuário", font=button_font, width=10, height=1).grid(row=10, column=10)
+    tk.Label(login_win, text="Senha", font=button_font, width=10, height=1).grid(row=11, column=10)
+
+    entry_user = tk.Entry(login_win)
+    entry_pass = tk.Entry(login_win, show="*")
+
+    entry_user.grid(row=10, column=11)
+    entry_pass.grid(row=11, column=11)
+
+    tk.Button(login_win, text="Login", command=login, font=button_font, width=10, height=1).grid(row=0, column=0)
+
+    login_win.mainloop()
+
+
+# Tela principal
+def main_screen():
+    main_win = tk.Tk()
+    main_win.title("Administração da Empresa")
+    button_font = ("Arial", 16)
+
+    tk.Button(main_win, text="Materiais", command=material_screen, font=button_font, width=20, height=2).grid(row=0,
+                                                                                                              column=0)
+    tk.Button(main_win, text="Produtos", command=product_screen, font=button_font, width=20, height=2).grid(row=0,
+                                                                                                            column=1)
+    tk.Button(main_win, text="Estoque", command=stock_screen, font=button_font, width=20, height=2).grid(row=1,
+                                                                                                         column=0)
+    tk.Button(main_win, text="Clientes", command=client_screen, font=button_font, width=20, height=2).grid(row=1,
+                                                                                                           column=1)
+    tk.Button(main_win, text="Lojas", command=store_screen, font=button_font, width=20, height=2).grid(row=2, column=0)
+
+    tk.Button(main_win, text="Notas Fiscais", command=invoice_screen, font=button_font, width=20, height=2).grid(row=2,
+                                                                                                                 column=1)
+
+    main_win.mainloop()
+
+
+# Funções para cada tela (exemplo para materiais)
+def material_screen(button_font="Materiais"):
+    material_win = tk.Tk()
+    material_win.title("Materiais")
+
+    # Definindo a fonte
+    my_font = font.Font(family='Helvetica', size=40, weight='bold')
+
+    tk.Button(material_win, text="Ver Materiais Cadastrados", command=view_materials, font=button_font, width=50,
+              height=10).grid(row=0, column=0)
+    tk.Button(material_win, text="Cadastrar Novo Material", command=add_material, font=button_font, width=50,
+              height=10).grid(row=1, column=0)
+
+    material_win.mainloop()
+    view_materials()
+
+
+def view_materials():
+    view_win = tk.Tk()
+    view_win.title("Materiais Cadastrados")
+
+    cursor.execute("SELECT * FROM materiais")
+    rows = cursor.fetchall()
+
+    for i, row in enumerate(rows):
+        tk.Label(view_win, text=row).grid(row=i, column=0)
+        for i, row in enumerate(rows):
+            tk.Label(view_win, text=row, font=('Arial', 20)).grid(row=i, column=0)
+
+    view_win.mainloop()
+
+
+def add_material():
+    add_win = tk.Tk()
+    add_win.title("Cadastrar Material")
+
+    font_settings = ("Arial", 20)  # tamanho fonte
+
+    tk.Label(add_win, text="Nome", font=font_settings,  width=20, height=2).grid(row=0, column=0)
+    tk.Label(add_win, text="Valor", font=font_settings,  width=20, height=2).grid(row=1, column=0)
+    tk.Label(add_win, text="Quantidade", font=font_settings,  width=20, height=2).grid(row=2, column=0)
+    tk.Label(add_win, text="Loja", font=font_settings,  width=20, height=2).grid(row=3, column=0)
+
+    entry_name = tk.Entry(add_win, font=font_settings)
+    entry_value = tk.Entry(add_win, font=font_settings)
+    entry_quantity = tk.Entry(add_win, font=font_settings)
+    entry_store = tk.Entry(add_win, font=font_settings)
+
+    entry_name.grid(row=0, column=1)
+    entry_value.grid(row=1, column=1)
+    entry_quantity.grid(row=2, column=1)
+    entry_store.grid(row=3, column=1)
+
+    def add_win():
+        add_win = tk.Tk()
+        add_win.title("Cadastrar Material")
+
+        font_settings = ("Arial", 14)  # Defina a fonte e o tamanho desejado
+        button_font_settings = font.Font(family='Arial', size=20, weight='bold')  # Fonte para o botão
+
+        tk.Label(add_win, text="Nome", font=font_settings, width=20, height=2).grid(row=0, column=0)
+        tk.Label(add_win, text="Valor", font=font_settings, width=20, height=2).grid(row=1, column=0)
+        tk.Label(add_win, text="Quantidade", font=font_settings, width=20, height=2).grid(row=2, column=0)
+        tk.Label(add_win, text="Loja", font=font_settings, width=20, height=2).grid(row=3, column=0)
+
+        entry_name = tk.Entry(add_win, font=font_settings)
+        entry_value = tk.Entry(add_win, font=font_settings)
+        entry_quantity = tk.Entry(add_win, font=font_settings)
+        entry_store = tk.Entry(add_win, font=font_settings)
+
+        entry_name.grid(row=0, column=1)
+        entry_value.grid(row=1, column=1)
+        entry_quantity.grid(row=2, column=1)
+        entry_store.grid(row=3, column=1)
+
+        def save_material():
+            cursor.execute("INSERT INTO materiais (nome, valor, quantidade, loja) VALUES (?, ?, ?, ?)",
+                           (entry_name.get(), entry_value.get(), entry_quantity.get(), entry_store.get()))
+            conn.commit()
+            messagebox.showinfo("Sucesso", "Material cadastrado com sucesso")
+            add_win.destroy()
+
+        save_button = tk.Button(add_win, text="Salvar", command=save_material, font=button_font_settings)
+        save_button.grid(row=40, column=10)
+        save_button.config(height=10, width=20)  # Ajuste o tamanho do botão
+
+    add_win.mainloop()
+
+
+# Funções para produtos
+def product_screen(button_font="produtos"):
+    product_win = tk.Tk()
+    product_win.title("Produtos")
+
+    tk.Button(product_win, text="Ver Produtos Cadastrados", command=view_products, font=button_font, width=50,
+              height=10).grid(row=0, column=0)
+    tk.Button(product_win, text="Cadastrar Novo Produto", command=add_product, font=button_font, width=50,
+              height=10).grid(row=2, column=0)
+
+    product_win.mainloop()
+
+
+def view_products():
+    view_win = tk.Tk()
+    view_win.title("Produtos Cadastrados")
+
+    cursor.execute("SELECT * FROM produtos")
+    rows = cursor.fetchall()
+
+    for i, row in enumerate(rows):
+        tk.Label(view_win, text=row).grid(row=1, column=0)
+
+    save.mainloop()
+
+
+def add_product():
+    add_win = tk.Tk()
+    add_win.title("Cadastrar Produto")
+
+    tk.Label(add_win, text="Nome").grid(row=0, column=0)
+    tk.Label(add_win, text="Valor de Custo").grid(row=1, column=0)
+    tk.Label(add_win, text="Percentual de Lucro").grid(row=2, column=0)
+    tk.Label(add_win, text="Quantidade").grid(row=3, column=0)
+
+    entry_name = tk.Entry(add_win)
+    entry_cost = tk.Entry(add_win)
+    entry_profit = tk.Entry(add_win)
+    entry_quantity = tk.Entry(add_win)
+
+    entry_name.grid(row=0, column=1)
+    entry_cost.grid(row=1, column=1)
+    entry_profit.grid(row=2, column=1)
+    entry_quantity.grid(row=3, column=1)
+
+    def save_product():
+        valor_final = float(entry_cost.get()) * (1 + float(entry_profit.get()) / 100)
+        cursor.execute(
+            "INSERT INTO produtos (nome, valor_custo, percentual_lucro, valor_final, quantidade) VALUES (?, ?, ?, ?, ?)",
+            (entry_name.get(), entry_cost.get(), entry_profit.get(), valor_final, entry_quantity.get()))
+        conn.commit()
+        messagebox.showinfo("Sucesso", "Produto cadastrado com sucesso")
+        add_win.destroy()
+
+    tk.Button(add_win, text="Salvar", command=save_product, ).grid(row=40, column=60)
+
+    save.mainloop()
+
+
+# Funções para controle de estoque
+def stock_screen():
+    stock_win = tk.Tk()
+    stock_win.title("Controle de Estoque")
+
+    tk.Button(stock_win, text="Controle de Materiais", command=material_stock_control).grid(row=0, column=0)
+    tk.Button(stock_win, text="Controle de Produtos", command=product_stock_control).grid(row=0, column=1)
+
+    stock_win.mainloop()
+
+
+def material_stock_control():
+    control_win = tk.Tk()
+    control_win.title("Controle de Materiais")
+
+    tk.Label(control_win, text="Nome do Material").grid(row=0, column=0)
+    tk.Label(control_win, text="Quantidade Usada").grid(row=1, column=0)
+
+    entry_name = tk.Entry(control_win)
+    entry_quantity = tk.Entry(control_win)
+
+    entry_name.grid(row=0, column=1)
+    entry_quantity.grid(row=1, column=1)
+
+    def update_material_stock():
+        cursor.execute("UPDATE materiais SET quantidade = quantidade - ? WHERE nome = ?",
+                       (entry_quantity.get(), entry_name.get()))
+        conn.commit()
+        messagebox.showinfo("Sucesso", "Estoque atualizado com sucesso")
+        control_win.destroy()
+
+    tk.Button(control_win, text="Atualizar", command=update_material_stock).grid(row=100, column=12)
+
+    control_win.mainloop()
+
+
+def product_stock_control():
+    control_win = tk.Tk()
+    control_win.title("Controle de Produtos")
+
+    tk.Label(control_win, text="Nome do Produto").grid(row=0, column=0)
+    tk.Label(control_win, text="Quantidade Vendida").grid(row=1, column=0)
+
+    entry_name = tk.Entry(control_win)
+    entry_quantity = tk.Entry(control_win)
+
+    entry_name.grid(row=0, column=1)
+    entry_quantity.grid(row=1, column=1)
+
+
+# Funções para clientes
+def client_screen():
+    client_win = tk.Tk()
+    client_win.title("Clientes")
+
+    tk.Button(client_win, text="Ver Clientes Cadastrados", command=view_clients).grid(row=0, column=0)
+    tk.Button(client_win, text="Cadastrar Novo Cliente", command=add_client).grid(row=0, column=1)
+
+    client_win.mainloop()
+
+
+def view_clients():
+    view_win = tk.Tk()
+    view_win.title("Clientes Cadastrados")
+
+    cursor.execute("SELECT * FROM clientes")
+    rows = cursor.fetchall()
+
+    for i, row in enumerate(rows):
+        tk.Label(view_win, text=row).grid(row=i, column=0)
+
+    view_win.mainloop()
+
+
+def add_client():
+    add_win = tk.Tk()
+    add_win.title("Cadastrar Cliente")
+
+    tk.Label(add_win, text="Nome").grid(row=0, column=0)
+    tk.Label(add_win, text="Cidade").grid(row=1, column=0)
+    tk.Label(add_win, text="Telefone").grid(row=2, column=0)
+    tk.Label(add_win, text="Email").grid(row=3, column=0)
+
+    entry_name = tk.Entry(add_win)
+    entry_city = tk.Entry(add_win)
+    entry_phone = tk.Entry(add_win)
+    entry_email = tk.Entry(add_win)
+
+    entry_name.grid(row=0, column=1)
+    entry_city.grid(row=1, column=1)
+    entry_phone.grid(row=2, column=1)
+    entry_email.grid(row=3, column=1)
+
+    def save_client():
+        cursor.execute("INSERT INTO clientes (nome, cidade, telefone, email) VALUES (?, ?, ?, ?)",
+                       (entry_name.get(), entry_city.get(), entry_phone.get(), entry_email.get()))
+        conn.commit()
+        messagebox.showinfo("Sucesso", "Cliente cadastrado com sucesso")
+        add_win.destroy()
+
+    tk.Button(add_win, text="Salvar", command=save_client).grid(row=4, column=1)
+
+    add_win.mainloop()
+
+
+# Funções para lojas
+def store_screen():
+    store_win = tk.Tk()
+    store_win.title("Lojas")
+
+    tk.Button(store_win, text="Ver Lojas Cadastradas", command=view_stores).grid(row=0, column=0)
+    tk.Button(store_win, text="Cadastrar Nova Loja", command=add_store).grid(row=0, column=1)
+
+    store_win.mainloop()
+
+
+def view_stores():
+    view_win = tk.Tk()
+    view_win.title("Lojas Cadastradas")
+
+    cursor.execute("SELECT * FROM lojas")
+    rows = cursor.fetchall()
+
+    for i, row in enumerate(rows):
+        tk.Label(view_win, text=row).grid(row=i, column=0)
+
+    view_win.mainloop()
+
+
+def add_store():
+    add_win = tk.Tk()
+    add_win.title("Cadastrar Loja")
+
+    tk.Label(add_win, text="Nome").grid(row=0, column=0)
+    tk.Label(add_win, text="Telefone").grid(row=1, column=0)
+    tk.Label(add_win, text="Departamento").grid(row=2, column=0)
+    tk.Label(add_win, text="Endereço").grid(row=3, column=0)
+
+    entry_name = tk.Entry(add_win)
+    entry_phone = tk.Entry(add_win)
+    entry_department = tk.Entry(add_win)
+    entry_address = tk.Entry(add_win)
+
+    entry_name.grid(row=0, column=1)
+    entry_phone.grid(row=1, column=1)
+    entry_department.grid(row=2, column=1)
+    entry_address.grid(row=3, column=1)
+
+    def save_store():
+        cursor.execute("INSERT INTO lojas (nome, telefone, departamento, endereco) VALUES (?, ?, ?, ?)",
+                       (entry_name.get(), entry_phone.get(), entry_department.get(), entry_address.get()))
+        conn.commit()
+        messagebox.showinfo("Sucesso", "Loja cadastrada com sucesso")
+        add_win.destroy()
+
+    tk.Button(add_win, text="Salvar", command=save_store).grid(row=4, column=1)
+
+    add_win.mainloop()
+
+
+# Funções para notas fiscais
+def invoice_screen():
+    invoice_win = tk.Tk()
+    invoice_win.title("Notas Fiscais")
+
+    tk.Button(invoice_win, text="Ver Notas Cadastradas", command=view_invoices).grid(row=0, column=0)
+    tk.Button(invoice_win, text="Cadastrar Nova Nota", command=add_invoice).grid(row=0, column=1)
+
+    invoice_win.mainloop()
+
+
+def view_invoices():
+    view_win = tk.Tk()
+    view_win.title("Notas Fiscais Cadastradas")
+
+    cursor.execute("SELECT * FROM notas_fiscais")
+    rows = cursor.fetchall()
+
+    for i, row in enumerate(rows):
+        tk.Label(view_win, text=row).grid(row=i, column=0)
+
+    view_win.mainloop()
+
+
+def add_invoice():
+    add_win = tk.Tk()
+    add_win.title("Cadastrar Nota Fiscal")
+
+    tk.Label(add_win, text="Número").grid(row=0, column=0)
+    tk.Label(add_win, text="Data").grid(row=1, column=0)
+    tk.Label(add_win, text="Produto").grid(row=2, column=0)
+    tk.Label(add_win, text="Loja").grid(row=3, column=0)
+    tk.Label(add_win, text="Valor Unitário").grid(row=4, column=0)
+
+    entry_number = tk.Entry(add_win)
+    entry_date = tk.Entry(add_win)
+    entry_product = tk.Entry(add_win)
+    entry_store = tk.Entry(add_win)
+    entry_value = tk.Entry(add_win)
+
+    entry_number.grid(row=0, column=1)
+    entry_date.grid(row=1, column=1)
+    entry_product.grid(row=2, column=1)
+    entry_store.grid(row=3, column=1)
+    entry_value.grid(row=4, column=1)
+
+    def save_invoice():
+        cursor.execute("INSERT INTO notas_fiscais (numero, data, produto, loja, valor_unitario) VALUES (?, ?, ?, ?, ?)",
+                       (
+                           entry_number.get(), entry_date.get(), entry_product.get(), entry_store.get(),
+                           entry_value.get()))
+        conn.commit()
+        messagebox.showinfo("Sucesso", "Nota fiscal cadastrada com sucesso")
+        add_win.destroy()
+
+    tk.Button(add_win, text="Salvar", command=save_invoice).grid(row=5, column=1)
+
+    add_win.mainloop()
+
+
+# Chamando a tela de login
+login_screen()
