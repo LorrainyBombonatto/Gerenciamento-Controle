@@ -3,6 +3,7 @@ Este programa tem por objetivo calcular automaticamente os preços que os produt
 administrador,facilitando o cálculo do preço de venda das bolsas, considerando todos os custos envolvidos e a margem de lucro desejada, bem como
 controle de estoque e registros de notas fiscais. A seguir está as principais funcionalidades que o programa deve ter, para que o administrador 
 acesse o programa e consiga realizar as funções desejadas para alcançar seus objetivos.
+
 Caso de Uso: Acesso ao Sistema
 1. Nome do Caso de Uso
 Acesso ao Sistema
