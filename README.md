@@ -1,6 +1,6 @@
 Programa de gestão - Gerenciamento e controle de Empresa .
 Este programa tem por objetivo calcular automaticamente os preços que os produtos devem ser vendidas, com o percentual de lucro escolhido pelo 
-administrador,facilitando o cálculo do preço de venda das bolsas, considerando todos os custos envolvidos e a margem de lucro desejada, bem como
+administrador,facilitando o cálculo do preço de venda, considerando todos os custos envolvidos e a margem de lucro desejada, bem como
 controle de estoque e registros de notas fiscais. A seguir está as principais funcionalidades que o programa deve ter, para que o administrador 
 acesse o programa e consiga realizar as funções desejadas para alcançar seus objetivos.
 
